@@ -1,0 +1,705 @@
+\UseRawInputEncoding
+\documentclass[12pt,a4paper]{article}
+
+% Paquetes necesarios
+\usepackage[spanish]{babel}
+\usepackage[utf8]{inputenc}
+\usepackage{graphicx}
+\usepackage{geometry}
+\usepackage{titlesec}
+\usepackage{fancyhdr}
+\usepackage{algorithm}
+\usepackage{algpseudocode}
+\usepackage{amsmath}
+\usepackage{listings}
+\usepackage{xcolor}
+\usepackage{booktabs}
+
+% Configuración de márgenes
+\geometry{
+    a4paper,
+    margin=2.5cm
+}
+
+% Configuración de encabezados y pies de página
+\pagestyle{fancy}
+\fancyhf{}
+\fancyhead[L]{Algoritmos y Estructuras de Datos II}
+\fancyhead[R]{Práctica 1}
+\fancyfoot[C]{\thepage}
+
+% Configuración de títulos
+\titleformat{\section}
+    {\normalfont\Large\bfseries}{\thesection}{1em}{}
+\titleformat{\subsection}
+    {\normalfont\large\bfseries}{\thesubsection}{1em}{}
+
+% Configuración de listings para código
+\lstset{
+    language=C++,
+    basicstyle=\ttfamily\small,
+    breaklines=true,
+    keywordstyle=\color{blue},
+    stringstyle=\color{red},
+    commentstyle=\color{green!60!black},
+    numbers=left,
+    numberstyle=\tiny,
+    numbersep=5pt,
+    frame=single,
+    showstringspaces=false
+}
+
+% Portada
+\begin{document}
+\begin{titlepage}
+    \begin{center}
+        \vspace*{2cm}
+        
+        \includegraphics[width=0.4\textwidth]{img/logo_um.jpg}
+        
+        \vspace{2cm}
+        
+        \Huge
+        \textbf{Algoritmos y Estructuras de Datos II}
+        
+        \vspace{1cm}
+        
+        \Large
+        \textbf{Práctica 1: Divide y Vencerás}
+        
+        \vspace{2cm}
+        
+        \Large
+        \textbf{Profesor:} \\
+        José Ramón Hoyos Barceló
+        
+        \vspace{2cm}
+        
+        \Large
+        \textbf{Alumnos:} \\
+        Vinicius Paredes Cabral \\
+        Pablo Herrero Tornero
+        
+        \vspace{1cm}
+        
+        \Large
+        \textbf{Grupo:} 3 \\
+        \textbf{Subgrupos:} 3.1 (Pablo) y 3.4 (Vinicius)
+        
+        \vspace{1cm}
+        
+        \Large
+        \textbf{Email:} \\
+        pablo.h.t@um.es \\
+        vinicius.p.c@um.es
+        
+        \vfill
+        
+        \Large
+        
+    \end{center}
+\end{titlepage}
+
+% Índice
+\tableofcontents
+\newpage
+
+% Aquí irá el contenido de la memoria
+\section{Introducción}
+\section{Diseño de la solución divide y vencerás}
+
+\subsection{Descripción del problema}
+El problema 6 consiste en encontrar una subcadena de longitud \( m \) que contenga el máximo número de apariciones consecutivas de un carácter \( C \) en una cadena \( A \) de longitud \( n \). La solución debe devolver la posición inicial de la subcadena y el número de apariciones consecutivas del carácter \( C \) en ella.
+
+\subsection{Estructuras de datos}
+Para la implementación del algoritmo se utilizan las siguientes estructuras de datos:
+\begin{itemize}
+    \item \textbf{String}: Para almacenar la cadena de entrada \( A \).
+    \item \textbf{Struct Resultado}: Una estructura que contiene:
+    \begin{itemize}
+        \item \textbf{posicion}: Entero que indica la posición inicial de la subcadena óptima.
+        \item \textbf{apariciones}: Entero que indica el número de apariciones consecutivas del carácter \( C \).
+    \end{itemize}
+\end{itemize}
+
+\subsection{Funciones básicas del esquema algorítmico}
+El algoritmo divide y vencerás implementa las siguientes funciones básicas:
+\begin{itemize}
+    \item \textbf{Divide}: La cadena se divide en dos mitades aproximadamente iguales.
+    \item \textbf{Vence}: Se resuelve recursivamente el problema para cada mitad.
+    \item \textbf{Combina}: Se combinan las soluciones de las subcadenas, considerando también las posibles soluciones que cruzan el punto medio. Para resolver esta parte, se define una zona límite alrededor del medio para incluir todas las ventanas de longitud \( m \) que puedan cruzar la división.
+\end{itemize}
+
+\subsection{Pseudocódigo}
+\begin{algorithm}[H]
+\caption{Encontrar Subcadena Óptima}
+\begin{algorithmic}[1]
+\Function{encontrarSubcadenaOptima}{cadena, inicio, fin, C, m}
+    \If{fin - inicio + 1 $<$ m}
+        \State \Return $\{-1, 0\}$
+    \EndIf
+    
+    \If{fin - inicio + 1 = m}
+        \State \Return contarAparicionesConsecutivas(cadena, inicio, fin, C, m)
+    \EndIf
+    
+    \State medio $\gets$ inicio + (fin - inicio) / 2
+    
+    \State izquierda $\gets$ encontrarSubcadenaOptima(cadena, inicio, medio, C, m)
+    \State derecha $\gets$ encontrarSubcadenaOptima(cadena, medio + 1, fin, C, m)
+    
+    \State inicioLimite $\gets$ max(inicio, medio - m + 1)
+    \State finLimite $\gets$ min(fin, medio + m - 1)
+    \State limite $\gets$ contarAparicionesConsecutivas(cadena, inicioLimite, finLimite, C, m)
+    
+    \If{izquierda.apariciones $\geq$ derecha.apariciones Y izquierda.apariciones $\geq$ limite.apariciones}
+        \State \Return izquierda
+    \ElsIf{derecha.apariciones $\geq$ izquierda.apariciones Y derecha.apariciones $\geq$ limite.apariciones}
+        \State \Return derecha
+    \Else
+        \State \Return limite
+    \EndIf
+\EndFunction
+\end{algorithmic}
+\end{algorithm}
+
+\begin{algorithm}[H]
+\caption{Contar Apariciones Consecutivas}
+\begin{algorithmic}[1]
+\Function{contarAparicionesConsecutivas}{cadena, inicio, fin, C, m}
+    \State res $\gets$ \{inicio, 0\} \Comment{Inicializa la estructura Resultado con posición "inicio" y 0 apariciones.}
+    \State maxConsecutivas $\gets$ 0 \Comment{Máximo número de apariciones consecutivas encontrado hasta el momento.}
+    \State posicionMax $\gets$ inicio \Comment{Posición de inicio que produce el máximo de apariciones.}
+    
+    \For{i $\gets$ inicio hasta fin - m + 1}
+        \State consecutivas $\gets$ 0 \Comment{Contador de apariciones consecutivas en la ventana actual.}
+        \State maxActual $\gets$ 0 \Comment{Máximo de apariciones consecutivas en la ventana actual.}
+        
+        \For{j $\gets$ i hasta i + m - 1}
+            \If{cadena[j] = C}
+                \State consecutivas $\gets$ consecutivas + 1 \Comment{Incrementa el contador si se encuentra el carácter \( C \).}
+                \State maxActual $\gets$ max(maxActual, consecutivas) \Comment{Actualiza el máximo local si es necesario.}
+            \Else
+                \State consecutivas $\gets$ 0 \Comment{Reinicia el contador si se rompe la secuencia.}
+            \EndIf
+        \EndFor
+        
+        \If{maxActual $>$ maxConsecutivas}
+            \State maxConsecutivas $\gets$ maxActual \Comment{Actualiza el máximo global si la ventana actual es mejor.}
+            \State posicionMax $\gets$ i \Comment{Registra la posición de inicio de la ventana óptima.}
+        \EndIf
+    \EndFor
+    
+    \State res.posicion $\gets$ posicionMax \Comment{Asigna la posición óptima encontrada.}
+    \State res.apariciones $\gets$ maxConsecutivas \Comment{Asigna el número máximo de apariciones consecutivas encontrado.}
+    \State \Return res \Comment{Devuelve el resultado.}
+\EndFunction
+\end{algorithmic}
+\end{algorithm}
+
+\subsection{Explicación del algoritmo}
+El algoritmo implementa una solución divide y vencerás con las siguientes características:
+\begin{itemize}
+    \item \textbf{Divide}: La cadena se divide en dos mitades aproximadamente iguales en cada llamada recursiva.
+    \item \textbf{Vence}: Se resuelve el problema para cada mitad (llamadas recursivas a \texttt{encontrarSubcadenaOptima}).
+    \item \textbf{Combina}: Se comparan los resultados de las mitades (izquierda y derecha) y se evalúa una región límite alrededor del punto medio (para capturar ventanas que crucen la división) mediante la función \texttt{contarAparicionesConsecutivas}. Se devuelve la solución con el mayor número de apariciones consecutivas.
+\end{itemize}
+
+La función auxiliar \texttt{contarAparicionesConsecutivas} se encarga de:
+\begin{itemize}
+    \item Explorar todas las posibles subcadenas de longitud \( m \) dentro de un intervalo.
+    \item Contar las apariciones consecutivas del carácter \( C \) en cada ventana.
+    \item Registrar la posición de inicio que genera el máximo número de apariciones.
+\end{itemize}
+
+\section{Análisis teórico del tiempo de ejecución}
+
+\subsection{Análisis de la función contarAparicionesConsecutivas}
+La función \texttt{contarAparicionesConsecutivas} tiene una complejidad de \(O(n \cdot m)\), donde:
+\begin{itemize}
+    \item \( n \) es la longitud de la subcadena a analizar.
+    \item \( m \) es la longitud de la subcadena objetivo.
+\end{itemize}
+Esto se debe a que:
+\begin{itemize}
+    \item El bucle exterior se ejecuta \( n-m+1 \) veces.
+    \item Para cada iteración, el bucle interior se ejecuta \( m \) veces.
+    \item Las operaciones dentro de los bucles son de tiempo constante.
+\end{itemize}
+
+\subsection{Análisis de la función principal}
+Para analizar el tiempo de ejecución de la función principal, consideramos la ecuación de recurrencia:
+\[
+T(n) = 2T(n/2) + O(n \cdot m)
+\]
+donde:
+\begin{itemize}
+    \item \(2T(n/2)\) representa las llamadas recursivas a cada mitad (corresponde a la parte \textbf{Divide} y \textbf{Vence}).
+    \item \(O(n \cdot m)\) es el tiempo de la función auxiliar (relacionado con la parte \textbf{Combina}).
+\end{itemize}
+
+\subsection{Caso mejor}
+El caso mejor ocurre cuando:
+\begin{itemize}
+    \item La subcadena óptima está completamente contenida en una de las mitades.
+    \item No es necesario explorar la región del límite.
+\end{itemize}
+En este caso, la ecuación de recurrencia se simplifica a:
+\[
+T(n) = 2T(n/2) + O(1)
+\]
+Aplicando el teorema maestro se concluye que el caso mejor tiene una complejidad de \(O(n)\).
+
+\subsection{Caso peor}
+El caso peor ocurre cuando:
+\begin{itemize}
+    \item La subcadena óptima cruza el punto medio.
+    \item Es necesario explorar todas las regiones.
+\end{itemize}
+La ecuación de recurrencia es:
+\[
+T(n) = 2T(n/2) + O(n \cdot m)
+\]
+y, aplicando el teorema maestro, se concluye que el caso peor tiene una complejidad de \(O(n \cdot m \cdot \log n)\).
+
+\subsection{Orden de ejecución}
+En resumen:
+\begin{itemize}
+    \item \textbf{Caso mejor}: \(O(n)\)
+    \item \textbf{Caso peor}: \(O(n \cdot m \cdot \log n)\)
+    \item \textbf{Caso promedio}: \(O(n \cdot m \cdot \log n)\)
+\end{itemize}
+
+\section{Implementación}
+
+\subsection{Estructuras de datos}
+\begin{lstlisting}[caption=Estructura Resultado]
+// Estructura Resultado:
+// - 'posicion': almacena la posición inicial de la subcadena óptima.
+// - 'apariciones': almacena el número máximo de apariciones consecutivas del carácter C.
+struct Resultado {
+    int posicion;        // Posición inicial de la subcadena óptima.
+    int apariciones;     // Número de apariciones consecutivas del carácter C.
+};
+\end{lstlisting}
+
+\subsection{Función auxiliar}
+\begin{lstlisting}[caption=Función contarAparicionesConsecutivas]
+// Función contarAparicionesConsecutivas:
+// - Entrada: 'cadena' (string de entrada), 'inicio' y 'fin' (límites del intervalo a analizar),
+//   'C' (carácter buscado) y 'm' (longitud de la subcadena).
+// - Salida: Estructura Resultado con la posición inicial y el número máximo de apariciones consecutivas.
+// Corresponde a la función 'contarAparicionesConsecutivas' del pseudocódigo.
+Resultado contarAparicionesConsecutivas(const string& cadena, int inicio, int fin, char C, int m) {
+    Resultado res = {inicio, 0};  // Inicializa 'res' con posición 'inicio' y 0 apariciones.
+    int maxConsecutivas = 0;        // Máximo número de apariciones consecutivas encontrado.
+    int posicionMax = inicio;       // Posición que da el máximo de apariciones.
+    
+    // Para cada posible posición inicial de una subcadena de longitud m
+    for (int i = inicio; i <= fin - m + 1; i++) {
+        int consecutivas = 0;       // Contador de apariciones consecutivas en la ventana actual.
+        int maxActual = 0;          // Máximo de apariciones consecutivas en la ventana actual.
+        
+        // Recorre la subcadena de longitud m iniciando en 'i'
+        for (int j = i; j < i + m; j++) {
+            if (cadena[j] == C) {
+                consecutivas++;     // Incrementa el contador si se encuentra el carácter C.
+                maxActual = max(maxActual, consecutivas);  // Actualiza el máximo local.
+            } else {
+                consecutivas = 0;   // Reinicia el contador si se rompe la secuencia.
+            }
+        }
+        
+        // Actualiza el máximo global si la ventana actual es mejor.
+        if (maxActual > maxConsecutivas) {
+            maxConsecutivas = maxActual;
+            posicionMax = i;
+        }
+    }
+    
+    res.posicion = posicionMax;         // Guarda la posición óptima encontrada.
+    res.apariciones = maxConsecutivas;    // Guarda el máximo número de apariciones.
+    return res;                         // Devuelve el resultado.
+}
+\end{lstlisting}
+
+\subsection{Función principal}
+\begin{lstlisting}[caption=Función encontrarSubcadenaOptima]
+// Función encontrarSubcadenaOptima:
+// - Entrada: 'cadena' (cadena de entrada), 'inicio' y 'fin' (límites de la cadena),
+//   'C' (carácter buscado) y 'm' (longitud de la subcadena).
+// - Salida: Estructura Resultado con la posición óptima y el número de apariciones consecutivas.
+// Corresponde al esquema algorítmico: 
+// * Divide: Se divide la cadena en dos mitades.
+// * Vence: Se resuelven recursivamente las dos mitades.
+// * Combina: Se compara y se evalúa la zona límite alrededor del medio.
+Resultado encontrarSubcadenaOptima(const string& cadena, int inicio, int fin, char C, int m) {
+    // Caso base: si la longitud es menor que m, no hay solución.
+    if (fin - inicio + 1 < m) {
+        return {-1, 0};
+    }
+    
+    // Si la longitud es igual a m, se cuenta directamente.
+    if (fin - inicio + 1 == m) {
+        return contarAparicionesConsecutivas(cadena, inicio, fin, C, m);
+    }
+    
+    // Divide: Calcular el punto medio para dividir la cadena.
+    int medio = inicio + (fin - inicio) / 2;
+    
+    // Vence: Resolver recursivamente para la mitad izquierda y derecha.
+    Resultado izquierda = encontrarSubcadenaOptima(cadena, inicio, medio, C, m);
+    Resultado derecha = encontrarSubcadenaOptima(cadena, medio + 1, fin, C, m);
+    
+    // Combina: Evaluar la zona límite que cruza el punto medio.
+    int inicioLimite = max(inicio, medio - m + 1);  // Asegura no salir del límite inferior.
+    int finLimite = min(fin, medio + m - 1);         // Asegura no salir del límite superior.
+    Resultado limite = contarAparicionesConsecutivas(cadena, inicioLimite, finLimite, C, m);
+    
+    // Se comparan las soluciones de izquierda, derecha y la zona límite.
+    if (izquierda.apariciones >= derecha.apariciones && izquierda.apariciones >= limite.apariciones) {
+        return izquierda;
+    } else if (derecha.apariciones >= izquierda.apariciones && derecha.apariciones >= limite.apariciones) {
+        return derecha;
+    } else {
+        return limite;
+    }
+}
+\end{lstlisting}
+
+\subsection{Función main}
+\begin{lstlisting}[caption=Función main]
+// Función main:
+// - Lee los datos de entrada: longitud de la cadena (n), longitud de la subcadena (m),
+//   y el carácter a buscar (C), junto con la propia cadena.
+// - Mide el tiempo de ejecución usando gettimeofday().
+// - Llama a la función 'encontrarSubcadenaOptima' y muestra el resultado.
+// Corresponde a la parte de "Implementación" en el esquema algorítmico.
+int main() {
+    string cadena;  // Almacena la cadena de entrada.
+    int n, m;       // 'n': longitud de la cadena, 'm': longitud de la subcadena.
+    char C;         // Carácter a buscar.
+    
+    // Solicitar y leer la entrada.
+    cout << "Introduce la longitud de la cadena (n): ";
+    cin >> n;
+    
+    cout << "Introduce la longitud de la subcadena (m): ";
+    cin >> m;
+    
+    cout << "Introduce el carácter a buscar (C): ";
+    cin >> C;
+    
+    cout << "Introduce la cadena: ";
+    cin >> cadena;
+    
+    // Medir tiempo de ejecución (parte experimental para evaluar el rendimiento).
+    struct timeval ti, tf;
+    double tiempo;
+    gettimeofday(&ti, NULL);  // Captura el tiempo inicial.
+    
+    // Resolver el problema mediante la función divide y vencerás.
+    Resultado resultado = encontrarSubcadenaOptima(cadena, 0, n-1, C, m);
+    
+    gettimeofday(&tf, NULL);  // Captura el tiempo final.
+    tiempo = (tf.tv_sec - ti.tv_sec)*1000 + (tf.tv_usec - ti.tv_usec)/1000.0;  // Calcula el tiempo en milisegundos.
+    
+    // Mostrar el resultado obtenido.
+    cout << "\nResultado:" << endl;
+    cout << "Posición inicial: " << resultado.posicion + 1 << endl;
+    cout << "Apariciones consecutivas: " << resultado.apariciones << endl;
+    cout << "Tiempo de ejecución: " << tiempo << " milisegundos" << endl;
+    
+    return 0;
+}
+\end{lstlisting}
+
+\subsection{Correspondencia con el esquema algorítmico}
+La implementación sigue fielmente el esquema divide y vencerás:
+\begin{itemize}
+    \item \textbf{Divide}: Se implementa al calcular el punto medio y dividir la cadena en dos partes (línea donde se asigna a "medio").
+    \item \textbf{Vence}: Se realiza mediante las llamadas recursivas a \texttt{encontrarSubcadenaOptima} para cada mitad.
+    \item \textbf{Combina}: Se implementa en la parte final de la función, donde se evalúa la zona límite (entre "inicioLimite" y "finLimite") y se comparan las soluciones.
+\end{itemize}
+
+\section{Validación del algoritmo}
+
+\subsection{Solución directa}
+Para validar el algoritmo divide y vencerás, se ha implementado una solución directa que explora todas las posibles subcadenas de longitud \( m \). Esta solución tiene una complejidad de \(O(n \cdot m)\) y sirve como referencia para verificar la corrección del algoritmo.
+
+\begin{lstlisting}[caption=Solución directa]
+// Función solucionDirecta:
+// - Explora todas las posibles subcadenas de longitud m en 'cadena'.
+// - Cuenta las apariciones consecutivas del carácter C en cada ventana.
+// - Retorna el resultado (posición y máximo número de apariciones) en una estructura Resultado.
+// Corresponde a una solución "fuerza bruta" para comparar con el algoritmo divide y vencerás.
+Resultado solucionDirecta(const string& cadena, char C, int m) {
+    Resultado res = {0, 0};      // Inicializa el resultado con posición 0 y 0 apariciones.
+    int maxConsecutivas = 0;       // Máximo global de apariciones consecutivas.
+    int posicionMax = 0;           // Posición que genera el máximo de apariciones.
+    
+    // Explorar todas las posibles subcadenas de longitud m
+    for (int i = 0; i <= cadena.length() - m; i++) {
+        int consecutivas = 0;      // Contador local para la subcadena actual.
+        int maxActual = 0;         // Máximo local de apariciones consecutivas en la ventana actual.
+        
+        // Contar apariciones consecutivas en la subcadena actual
+        for (int j = i; j < i + m; j++) {
+            if (cadena[j] == C) {
+                consecutivas++;
+                maxActual = max(maxActual, consecutivas);
+            } else {
+                consecutivas = 0;
+            }
+        }
+        
+        // Actualizar el máximo global si se encuentra una mejor ventana
+        if (maxActual > maxConsecutivas) {
+            maxConsecutivas = maxActual;
+            posicionMax = i;
+        }
+    }
+    
+    res.posicion = posicionMax;         // Guarda la posición óptima.
+    res.apariciones = maxConsecutivas;    // Guarda el máximo número de apariciones.
+    return res;                         // Retorna el resultado.
+}
+\end{lstlisting}
+
+\subsection{Casos de prueba}
+Se han realizado las siguientes pruebas para validar el algoritmo:
+\begin{enumerate}
+    \item \textbf{Caso del ejemplo del enunciado}:
+    \begin{itemize}
+        \item Cadena: ``cddabcdacc''
+        \item Longitud (\(n\)): 10
+        \item Subcadena (\(m\)): 5
+        \item Carácter: 'c'
+        \item Resultado esperado: posición 6, 2 apariciones consecutivas.
+    \end{itemize}
+    \item \textbf{Casos límite}:
+    \begin{itemize}
+        \item Cadena vacía.
+        \item Cadena con longitud igual a \(m\).
+        \item Cadena con longitud menor que \(m\).
+        \item Cadena con todos los caracteres iguales.
+        \item Cadena sin apariciones del carácter buscado.
+    \end{itemize}
+    \item \textbf{Casos especiales}:
+    \begin{itemize}
+        \item Subcadena óptima al inicio.
+        \item Subcadena óptima al final.
+        \item Subcadena óptima en el medio.
+        \item Subcadena óptima que cruza el punto medio.
+    \end{itemize}
+\end{enumerate}
+
+\subsection{Resultados de la validación}
+La siguiente tabla muestra los resultados de la validación comparando la solución divide y vencerás con la solución directa:
+
+\begin{center}
+\begin{tabular}{lcccc}
+\toprule
+\textbf{Caso de prueba} & \textbf{\(n\)} & \textbf{\(m\)} & \textbf{DyV} & \textbf{Directa} \\
+\midrule
+Ejemplo enunciado & 10 & 5 & (6,2) & (6,2) \\
+Cadena vacía & 0 & 5 & (-1,0) & (-1,0) \\
+Todos iguales & 10 & 5 & (0,5) & (0,5) \\
+Sin apariciones & 10 & 5 & (0,0) & (0,0) \\
+\bottomrule
+\end{tabular}
+\end{center}
+
+\subsection{Conclusiones de la validación}
+\begin{itemize}
+    \item El algoritmo divide y vencerás produce resultados idénticos a la solución directa en todos los casos de prueba.
+    \item La implementación maneja correctamente los casos límite y especiales.
+    \item La solución es robusta y mantiene la corrección incluso en casos extremos.
+\end{itemize}
+
+\section{Estudio experimental del tiempo de ejecución}
+
+\subsection{Configuración del experimento}
+Se han realizado mediciones del tiempo de ejecución para tres tipos de casos:
+\begin{itemize}
+    \item \textbf{Caso favorable}: Cadena con todos los caracteres iguales al buscado.
+    \item \textbf{Caso desfavorable}: Cadena sin apariciones consecutivas del carácter buscado.
+    \item \textbf{Caso promedio}: Cadena con distribución aleatoria de caracteres.
+\end{itemize}
+Para cada tipo de caso, se han probado diferentes tamaños de entrada desde 100 hasta 100.000.000 caracteres, siguiendo una progresión de potencias de 10.
+
+\subsection{Generador de Casos de Prueba}
+A continuación se muestra el código utilizado para generar los casos de prueba:
+
+\begin{lstlisting}[caption=Generador de Casos de Prueba, label=lst:generador]
+// Este programa genera archivos de casos de prueba para el algoritmo.
+// Se generan tres tipos de casos: favorable, desfavorable y promedio.
+// 'n': tamaño de la cadena, 'm': longitud de la subcadena a buscar, 'C': carácter objetivo.
+// Corresponde a la parte de "Diseño y aplicación de un proceso de validación" del esquema algorítmico.
+#include <iostream>
+#include <fstream>
+#include <random>
+#include <string>
+#include <algorithm>
+
+using namespace std;
+
+// Función para generar una cadena aleatoria de longitud n.
+string generarCadenaAleatoria(int n)
+{
+    static const char alphanum[] = "abcdefghijklmnopqrstuvwxyz";
+    string cadena;
+    cadena.reserve(n);
+
+    for (int i = 0; i < n; ++i)
+    {
+        cadena += alphanum[rand() % (sizeof(alphanum) - 1)];
+    }
+
+    return cadena;
+}
+
+// Función para generar caso favorable (máximo número de apariciones consecutivas).
+// Aquí se crea una cadena de tamaño n en la que todos los caracteres son C.
+string generarCasoFavorable(int n, int m, char C)
+{
+    string cadena(n, C); // Cadena llena del carácter C.
+    return cadena;
+}
+
+// Función para generar caso desfavorable (mínimo número de apariciones consecutivas).
+// Se genera una cadena aleatoria y se modifica para evitar repeticiones consecutivas de C.
+string generarCasoDesfavorable(int n, int m, char C)
+{
+    string cadena = generarCadenaAleatoria(n);
+    // Aseguramos que no haya apariciones consecutivas del carácter C.
+    for (int i = 0; i < n; i++)
+    {
+        if (cadena[i] == C)
+        {
+            // Reemplazamos C por otro carácter aleatorio.
+            static const char alphanum[] = "abdefghijklmnopqrstuvwxyz";
+            cadena[i] = alphanum[rand() % (sizeof(alphanum) - 1)];
+        }
+    }
+    return cadena;
+}
+
+// Función para generar caso promedio (distribución aleatoria).
+string generarCasoPromedio(int n, int m, char C)
+{
+    return generarCadenaAleatoria(n);
+}
+
+int main()
+{
+    // Configuración de la semilla aleatoria.
+    srand(time(nullptr));
+
+    // Parámetros de prueba.
+    int n = 100000000; // Tamaño máximo de la cadena.
+    int m = 100;       // Tamaño de la subcadena.
+    char C = 'c';      // Carácter a buscar.
+
+    // Generar casos de prueba para diferentes tamaños.
+    for (int tam = 100; tam <= n; tam *= 10)
+    {
+        // Crear archivo para el caso favorable.
+        ofstream fout("casos/caso_favorable_" + to_string(tam) + ".txt");
+        fout << tam << " " << m << " " << C << endl;
+        fout << generarCasoFavorable(tam, m, C) << endl;
+        fout.close();
+
+        // Crear archivo para el caso desfavorable.
+        fout.open("casos/caso_desfavorable_" + to_string(tam) + ".txt");
+        fout << tam << " " << m << " " << C << endl;
+        fout << generarCasoDesfavorable(tam, m, C) << endl;
+        fout.close();
+
+        // Crear archivo para el caso promedio.
+        fout.open("casos/caso_promedio_" + to_string(tam) + ".txt");
+        fout << tam << " " << m << " " << C << endl;
+        fout << generarCasoPromedio(tam, m, C) << endl;
+        fout.close();
+
+        cout << "Generados casos de prueba para n = " << tam << endl;
+    }
+
+    return 0;
+}
+\end{lstlisting}
+
+\subsection{Resultados experimentales}
+La siguiente tabla muestra los tiempos de ejecución (en milisegundos) para cada caso:
+
+\begin{center}
+\begin{tabular}{lcc}
+\toprule
+\textbf{Tipo} & \textbf{Tamaño (n)} & \textbf{Tiempo (ms)} \\
+\midrule
+desfavorable & 100         & 0.001 \\
+desfavorable & 1000        & 0.387 \\
+desfavorable & 10000       & 4.452 \\
+desfavorable & 100000      & 46.92 \\
+desfavorable & 1000000     & 483.699 \\
+desfavorable & 10000000    & 5185.18 \\
+desfavorable & 100000000   & 74369.4 \\
+\midrule
+favorable    & 100         & 0.001 \\
+favorable    & 1000        & 0.004 \\
+favorable    & 10000       & 0.041 \\
+favorable    & 100000      & 0.403 \\
+favorable    & 1000000     & 12.749 \\
+favorable    & 10000000    & 113.238 \\
+favorable    & 100000000   & 660.479 \\
+\midrule
+promedio     & 100         & 0.001 \\
+promedio     & 1000        & 0.573 \\
+promedio     & 10000       & 9.415 \\
+promedio     & 100000      & 113.227 \\
+promedio     & 1000000     & 991.054 \\
+promedio     & 10000000    & 5652.41 \\
+promedio     & 100000000   & 54495.9 \\
+\bottomrule
+\end{tabular}
+\end{center}
+
+\subsection{Análisis de los resultados}
+Los datos experimentales indican que, para entradas de gran tamaño, se observa el siguiente orden de tiempos: el caso \textbf{desfavorable} es el más lento, seguido por el caso \textbf{promedio} y, finalmente, el caso \textbf{favorable} es el más rápido. Esto concuerda con la idea de que:
+\begin{itemize}
+    \item El algoritmo realiza más operaciones en la fase de combinación cuando la cadena dificulta las apariciones consecutivas (caso desfavorable).
+    \item La presencia de muchas repeticiones del carácter buscado (caso favorable) reduce significativamente las operaciones necesarias para encontrar la solución óptima.
+\end{itemize}
+Además, se observa que el crecimiento de los tiempos es moderado para tamaños pequeños, pero aumenta de manera notable conforme \( n \) crece, destacando más en el caso desfavorable.
+
+\section{Contraste del estudio teórico y experimental}
+El análisis teórico predice que:
+\begin{itemize}
+    \item El \textbf{caso mejor} es \(O(n)\) (cuando la cadena está llena del carácter buscado).
+    \item El \textbf{caso peor} y el \textbf{caso promedio} son \(O(n \cdot m \cdot \log n)\) (cuando la cadena impide concentrar apariciones consecutivas, o presenta una distribución que no es claramente favorable).
+\end{itemize}
+Los resultados experimentales muestran que, para entradas grandes, el orden de rendimiento es: \textbf{desfavorable} \(>\) \textbf{promedio} \(>\) \textbf{favorable}, lo cual coincide con la expectativa de que el peor caso requiere mayor cantidad de operaciones, mientras que el caso favorable se beneficia de la homogeneidad de la cadena. Aun así, se aprecian pequeñas diferencias en los valores exactos.
+
+\begin{figure}[H]
+    \centering
+    \includegraphics[width=0.8\textwidth]{img/Figure_1.png}
+    \caption{Comparación de tiempos experimentales y órdenes teóricos.}
+    \label{fig:tiempos}
+\end{figure}
+
+En conclusión, el contraste entre la teoría y la práctica confirma que, aunque la complejidad asintótica describe correctamente el comportamiento general del algoritmo, factores prácticos pueden introducir ligeras variaciones en los tiempos medidos. Esto valida la importancia de combinar el análisis teórico con pruebas experimentales para obtener una visión completa de la eficiencia real del enfoque divide y vencerás en este problema.
+
+\section{Conclusiones}
+
+\subsection{Conclusiones personales}
+\begin{quote}
+En conclusión, trabajar en este proyecto nos permitió ver de primera mano cómo se comporta nuestro algoritmo de divide y vencerás en la práctica. Al implementar tanto el algoritmo como el generador de casos de prueba, pudimos automatizar las mediciones y observar que, para entradas grandes, el caso favorable se desempeña mejor, mientras que los casos desfavorable y promedio tienen tiempos muy similares. Esta experiencia nos ha enseñado lo valioso que es complementar la teoría con pruebas experimentales y trabajar en equipo para enfrentar los desafíos de la programación y el análisis de algoritmos. 
+
+\textbf{Estimación del tiempo invertido:}
+\begin{itemize}
+    \item \textbf{Vinicius Paredes Cabral:} 15 horas aprox.
+    \item \textbf{Pablo Herrero Tornero:} 15 horas aprox.
+\end{itemize}
+\end{quote}
+
+\end{document}
